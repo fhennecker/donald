@@ -2,6 +2,7 @@
 
 import random
 import json
+import numpy as np
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
 
@@ -44,7 +45,29 @@ class Trumpinator():
         self.loss = tf.reduce_sum(tf.square(embedded_targets-self.output))
         self.train_step = tf.train.RMSPropOptimizer(0.001).minimize(self.loss)
 
+def train():
+
+    batch_size = 32
+    seqlen = 10
+    great_nn = Trumpinator(batch_size, seqlen, len(allowed_chars))
+
+    with tf.Session() as sess:
+        init = tf.global_variables_initializer()
+        sess.run(init)
+        for step in range(1000):
+
+            X = np.ones((batch_size, seqlen))
+            y = np.ones((batch_size, seqlen))
+
+            loss, _ = sess.run([great_nn.loss, great_nn.train_step], feed_dict={
+                great_nn.input : X,
+                great_nn.target : y
+                })
+            
+            if step % 10 == 0:
+                print(loss)
+
 
 
 if __name__ == "__main__":
-    t = Trumpinator(32, 20, 61)
+    train()
