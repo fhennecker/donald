@@ -32,7 +32,7 @@ class Trumpinator():
         embedded_inputs = tf.one_hot(self.input, nchars)
         
         cell = tf.nn.rnn_cell.BasicLSTMCell(100)
-        cell = tf.nn.rnn_cell.MultiRNNCell([cell] * 2)
+        #  cell = tf.nn.rnn_cell.MultiRNNCell([cell] * 2)
         self.init_state = cell.zero_state(batch_size, tf.float32)
 
         output, self.output_state = tf.nn.dynamic_rnn(
@@ -46,7 +46,7 @@ class Trumpinator():
         self.mask = tf.placeholder(tf.float32, [batch_size, seqlen], name='mask')
         self.target = tf.placeholder(tf.int32, [batch_size, seqlen], name='target')
         embedded_targets = tf.one_hot(self.target, nchars)
-        self.loss = tf.reduce_sum(tf.square(tf.reduce_sum(embedded_targets-self.output, axis=2)*self.mask))
+        self.loss = tf.reduce_sum(tf.reduce_sum(tf.square(embedded_targets-self.output), axis=2)*self.mask)
         self.train_step = tf.train.RMSPropOptimizer(0.001).minimize(self.loss)
 
 
@@ -72,7 +72,7 @@ def train():
     with tf.Session() as sess:
         init = tf.global_variables_initializer()
         sess.run(init)
-        for step in range(1, 1000):
+        for step in range(int(1e10)):
             X[:,:] = 0
             Y[:,:] = 0
             Z[:,:] = 0
