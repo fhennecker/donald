@@ -26,6 +26,7 @@ def get_batch(batch_size):
 
 class Trumpinator():
     def __init__(self, batch_size, seqlen, nchars):
+        self.batch_size = batch_size
         self.input = tf.placeholder(tf.int32, [batch_size, seqlen], name='input')
         self.lengths = tf.placeholder(tf.int32, [batch_size], name='lengths')
         embedded_inputs = tf.one_hot(self.input, nchars)
@@ -48,6 +49,18 @@ class Trumpinator():
         self.loss = tf.reduce_sum(tf.square(tf.reduce_sum(embedded_targets-self.output, axis=2)*self.mask))
         self.train_step = tf.train.RMSPropOptimizer(0.001).minimize(self.loss)
 
+
+def predict(sess, nn):
+    X = np.zeros((nn.batch_size, 141))
+    t = np.array([transform_text("make america great agai")] * nn.batch_size)
+    X[:,:len(t[0])] = t
+    res = sess.run(nn.output, feed_dict={
+        nn.input: X,
+        nn.mask: np.ones((len(t), len(X[0]))),
+        nn.lengths: [len(t[0])] * nn.batch_size
+    })
+    print(res)
+
 def train():
     batch_size = 32
     seqlen = 141
@@ -59,7 +72,7 @@ def train():
     with tf.Session() as sess:
         init = tf.global_variables_initializer()
         sess.run(init)
-        for step in range(1000):
+        for step in range(1, 1000):
             X[:,:] = 0
             Y[:,:] = 0
             Z[:,:] = 0
@@ -79,6 +92,7 @@ def train():
             
             if step % 10 == 0:
                 print(loss)
+                predict(sess, great_nn)
 
 
 
