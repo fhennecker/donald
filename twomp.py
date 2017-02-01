@@ -1,11 +1,16 @@
+# -*- coding: utf-8 -*-
+
 import random
 import json
 import tensorflow as tf
 
 
+allowed_chars = ":q“;b%—8–kezlf.n x…vsaw0t’'3@6-ch&_u1/2,7$g4)ypj?#!i”5(d9o\"mr"
+
+
 def transform_text(text):
     """Apply all transformations you want here ... :)))))))"""
-    return text
+    return list(filter(lambda x: x > -1, map(allowed_chars.find, text))) + [len(allowed_chars)]
 
 dataset = [
     transform_text(t['text']) for i in (2015, 2016, 2017)
