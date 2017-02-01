@@ -27,6 +27,7 @@ def get_batch(batch_size):
 class Trumpinator():
     def __init__(self, batch_size, seqlen, nchars):
         self.input = tf.placeholder(tf.int32, [batch_size, seqlen])
+        self.lengths = tf.placeholder(tf.int32, [batch_size])
         embedded_inputs = tf.one_hot(self.input, nchars)
         
         cell = tf.nn.rnn_cell.BasicLSTMCell(100)
@@ -36,13 +37,15 @@ class Trumpinator():
         output, self.output_state = tf.nn.dynamic_rnn(
                 cell,
                 embedded_inputs,
+                sequence_length=self.lengths,
                 initial_state=self.init_state)
 
         self.output = tf.nn.softmax(slim.fully_connected(output, nchars))
 
+        self.mask = tf.placeholder(tf.int32, [batch_size, seqlen])
         self.target = tf.placeholder(tf.int32, [batch_size, seqlen])
         embedded_targets = tf.one_hot(self.target, nchars)
-        self.loss = tf.reduce_sum(tf.square(embedded_targets-self.output))
+        self.loss = tf.reduce_sum(tf.square(embedded_targets-self.output)*self.mask)
         self.train_step = tf.train.RMSPropOptimizer(0.001).minimize(self.loss)
 
 def train():
