@@ -42,7 +42,7 @@ class Trumpinator():
 
         self.target = tf.placeholder(tf.int32, [batch_size, seqlen])
         embedded_targets = tf.one_hot(self.target, nchars)
-        self.loss = tf.reduce_sum(tf.square(embedded_targets-embedded_inputs))
+        self.loss = tf.reduce_sum(tf.square(embedded_targets-self.output))
         self.train_step = tf.train.RMSPropOptimizer(0.001).minimize(self.loss)
 
 
