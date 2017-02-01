@@ -3,6 +3,7 @@
 import random
 import json
 import tensorflow as tf
+import tensorflow.contrib.slim as slim
 
 
 allowed_chars = ":q“;b%—8–kezlf.n x…vsaw0t’'3@6-ch&_u1/2,7$g4)ypj?#!i”5(d9o\"mr"
@@ -23,14 +24,28 @@ def get_batch(batch_size):
 
 
 class Trumpinator():
-    def __init__(self, batch_size):
-        self.input = tf.placeholder(tf.int32, [batch_size, 140])
+    def __init__(self, batch_size, seqlen, nchars):
+        self.input = tf.placeholder(tf.int32, [batch_size, seqlen])
         self.lengths = tf.placeholder(tf.int32, [batch_size])
+        embedded_inputs = tf.one_hot(self.input, nchars)
+        
         cell = tf.nn.rnn_cell.BasicLSTMCell(100)
         cell = tf.nn.rnn_cell.MultiRNNCell([cell] * 2)
         self.init_state = cell.zero_state(batch_size, tf.float32)
 
+        output, self.output_state = tf.nn.dynamic_rnn(
+                cell,
+                embedded_inputs,
+                initial_state=self.init_state)
+
+        self.output = tf.nn.softmax(slim.fully_connected(output, nchars))
+
+        self.target = tf.placeholder(tf.int32, [batch_size, seqlen])
+        embedded_targets = tf.one_hot(self.target, nchars)
+        self.loss = tf.reduce_sum(tf.square(embedded_targets-embedded_inputs))
+        self.train_step = tf.train.RMSPropOptimizer(0.001).minimize(self.loss)
+
+
 
 if __name__ == "__main__":
-    t = Trumpinator(32)
-    print(dataset[1:10])
+    t = Trumpinator(32, 20, 61)
