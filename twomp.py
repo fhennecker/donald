@@ -26,8 +26,8 @@ def get_batch(batch_size):
 
 class Trumpinator():
     def __init__(self, batch_size, seqlen, nchars):
-        self.input = tf.placeholder(tf.int32, [batch_size, seqlen])
-        self.lengths = tf.placeholder(tf.int32, [batch_size])
+        self.input = tf.placeholder(tf.int32, [batch_size, seqlen], name='input')
+        self.lengths = tf.placeholder(tf.int32, [batch_size], name='lengths')
         embedded_inputs = tf.one_hot(self.input, nchars)
         
         cell = tf.nn.rnn_cell.BasicLSTMCell(100)
@@ -42,18 +42,18 @@ class Trumpinator():
 
         self.output = tf.nn.softmax(slim.fully_connected(output, nchars))
 
-        self.mask = tf.placeholder(tf.int32, [batch_size, seqlen])
-        self.target = tf.placeholder(tf.int32, [batch_size, seqlen])
+        self.mask = tf.placeholder(tf.float32, [batch_size, seqlen], name='mask')
+        self.target = tf.placeholder(tf.int32, [batch_size, seqlen], name='target')
         embedded_targets = tf.one_hot(self.target, nchars)
-        self.loss = tf.reduce_sum(tf.square(embedded_targets-self.output)*self.mask)
+        self.loss = tf.reduce_sum(tf.square(tf.reduce_sum(embedded_targets-self.output, axis=2)*self.mask))
         self.train_step = tf.train.RMSPropOptimizer(0.001).minimize(self.loss)
 
 def train():
     batch_size = 32
-    seqlen = 10
+    seqlen = 141
     great_nn = Trumpinator(batch_size, seqlen, len(allowed_chars))
 
-    X = np.zeros((batch_size, 141))
+    X = np.zeros((batch_size, seqlen), dtype=np.int32)
     Y = np.zeros_like(X)
     Z = np.zeros_like(X)
     with tf.Session() as sess:
@@ -64,11 +64,11 @@ def train():
             Y[:,:] = 0
             Z[:,:] = 0
             batch = get_batch(batch_size)
-            lens = np.array([len(x) for x in batch]) - 1
+            lens = np.array([len(x) for x in batch], dtype=np.int32) - 1
             for i, b in enumerate(batch):
-                X[i,:len(b) - 1] = b[:-1]
-                Y[i,:len(b) - 1] = b[1:]
-                Z[i,:len(b) - 1] = 1
+                X[i,:lens[i]] = b[:-1]
+                Y[i,:lens[i]] = b[1:]
+                Z[i,:lens[i]] = 1
 
             loss, _ = sess.run([great_nn.loss, great_nn.train_step], feed_dict={
                 great_nn.input : X,
