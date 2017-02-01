@@ -2,6 +2,7 @@
 
 import random
 import json
+import sys
 import numpy as np
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
@@ -59,12 +60,13 @@ def predict(sess, nn):
         nn.mask: np.ones((len(t), len(X[0]))),
         nn.lengths: [len(t[0])] * nn.batch_size
     })
-    print(res)
+    #  print(res)
 
 def train():
     batch_size = 32
     seqlen = 141
     great_nn = Trumpinator(batch_size, seqlen, len(allowed_chars))
+    saver = tf.train.Saver()
 
     X = np.zeros((batch_size, seqlen), dtype=np.int32)
     Y = np.zeros_like(X)
@@ -92,18 +94,22 @@ def train():
             
             if step % 10 == 0:
                 print(loss)
-                predict(sess, great_nn)
+                #  predict(sess, great_nn)
+
+            if step % 100 == 0:
+                saver.save(sess, 'training/bonsoir')
 
 def freerun():
     great_nn = Trumpinator(1, 1, len(allowed_chars))
 
+    saver = tf.train.Saver()
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
-        # saver.restore()
+        saver.restore(sess, 'training/bonsoir')
 
         hidden_state = None
         done = False
-        previous_char = 'i'
+        previous_char = 'd'
         while not done:
             feed_dict = {great_nn.input: [[allowed_chars.index(previous_char)]], 
                     great_nn.lengths:[1]}
@@ -112,7 +118,7 @@ def freerun():
             out, hidden_state = sess.run([great_nn.output, great_nn.output_state],
                     feed_dict=feed_dict)
             previous_char = allowed_chars[np.argmax(out[0][0])]
-            print(previous_char)
+            print(previous_char, end=''); sys.stdout.flush()
             done = previous_char == len(allowed_chars)
         
 
