@@ -26,7 +26,6 @@ def get_batch(batch_size):
 class Trumpinator():
     def __init__(self, batch_size, seqlen, nchars):
         self.input = tf.placeholder(tf.int32, [batch_size, seqlen])
-        self.lengths = tf.placeholder(tf.int32, [batch_size])
         embedded_inputs = tf.one_hot(self.input, nchars)
         
         cell = tf.nn.rnn_cell.BasicLSTMCell(100)
