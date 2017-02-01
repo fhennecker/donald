@@ -59,7 +59,7 @@ def train():
     with tf.Session() as sess:
         init = tf.global_variables_initializer()
         sess.run(init)
-        for step in range(1e10):
+        for step in range(int(1e10)):
             X[:,:] = 0
             Y[:,:] = 0
             Z[:,:] = 0
