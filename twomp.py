@@ -80,7 +80,30 @@ def train():
             if step % 10 == 0:
                 print(loss)
 
+def freerun():
+    great_nn = Trumpinator(1, 1, len(allowed_chars))
+
+    with tf.Session() as sess:
+        sess.run(tf.global_variables_initializer())
+        # saver.restore()
+
+        hidden_state = None
+        done = False
+        previous_char = 'i'
+        while not done:
+            feed_dict = {great_nn.input: [[allowed_chars.index(previous_char)]], 
+                    great_nn.lengths:[1]}
+            if hidden_state is not None:
+                feed_dict[great_nn.init_state] = hidden_state
+            out, hidden_state = sess.run([great_nn.output, great_nn.output_state],
+                    feed_dict=feed_dict)
+            previous_char = allowed_chars[np.argmax(out[0][0])]
+            print(previous_char)
+            done = previous_char == len(allowed_chars)
+        
+
 
 
 if __name__ == "__main__":
-    train()
+    #  train()
+    freerun()
