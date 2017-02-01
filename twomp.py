@@ -12,7 +12,7 @@ allowed_chars = ":q“;b%—8–kezlf.n x…vsaw0t’'3@6-ch&_u1/2,7$g4)ypj?#!i�
 
 def transform_text(text):
     """Apply all transformations you want here ... :)))))))"""
-    return list(filter(lambda x: x > -1, map(allowed_chars.find, text))) + [len(allowed_chars)]
+    return (list(filter(lambda x: x > -1, map(allowed_chars.find, text))) + [len(allowed_chars)])[:140]
 
 dataset = [
     transform_text(t['text']) for i in (2015, 2016, 2017)
