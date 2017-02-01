@@ -20,7 +20,7 @@ def get_batch(batch_size):
 
 class Trumpinator():
     def __init__(self, batch_size, seqlen, nchars):
-        self.input = tf.placeholder(tf.int32, [batch_size, 140])
+        self.input = tf.placeholder(tf.int32, [batch_size, seqlen])
         self.lengths = tf.placeholder(tf.int32, [batch_size])
         embedded_inputs = tf.one_hot(self.input, nchars)
         
@@ -34,6 +34,12 @@ class Trumpinator():
                 initial_state=self.init_state)
 
         self.output = tf.nn.softmax(slim.fully_connected(output, nchars))
+
+        self.target = tf.placeholder(tf.int32, [batch_size, seqlen])
+        embedded_targets = tf.one_hot(self.target, nchars)
+        self.loss = tf.reduce_sum(tf.square(embedded_targets-embedded_inputs))
+        self.train_step = tf.train.RMSPropOptimizer(0.001).minimize(self.loss)
+
 
 
 if __name__ == "__main__":
