@@ -46,23 +46,33 @@ class Trumpinator():
         self.train_step = tf.train.RMSPropOptimizer(0.001).minimize(self.loss)
 
 def train():
-
     batch_size = 32
     seqlen = 10
     great_nn = Trumpinator(batch_size, seqlen, len(allowed_chars))
 
+    X = np.zeros((batch_size, 141))
+    Y = np.zeros_like(X)
+    Z = np.zeros_like(X)
     with tf.Session() as sess:
         init = tf.global_variables_initializer()
         sess.run(init)
         for step in range(1000):
-
-            X = np.ones((batch_size, seqlen))
-            y = np.ones((batch_size, seqlen))
+            X[:,:] = 0
+            Y[:,:] = 0
+            Z[:,:] = 0
+            batch = get_batch(batch_size)
+            lens = np.array([len(x) for x in batch]) - 1
+            for i, b in enumerate(batch):
+                X[i,:len(b) - 1] = b[:-1]
+                Y[i,:len(b) - 1] = b[1:]
+                Z[i,:len(b) - 1] = 1
 
             loss, _ = sess.run([great_nn.loss, great_nn.train_step], feed_dict={
                 great_nn.input : X,
-                great_nn.target : y
-                })
+                great_nn.target: Y,
+                great_nn.mask: Z,
+                great_nn.lengths: lens,
+            })
             
             if step % 10 == 0:
                 print(loss)
