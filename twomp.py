@@ -13,7 +13,7 @@ allowed_chars = ":q“;b%—8–kezlf.n x…vsaw0t’'3@6-ch&_u1/2,7$g4)ypj?#!i�
 
 def transform_text(text):
     """Apply all transformations you want here ... :)))))))"""
-    return (list(filter(lambda x: x > -1, map(allowed_chars.find, text))) + [len(allowed_chars)])[:140]
+    return (list(filter(lambda x: x > -1, map(allowed_chars.find, text.lower()))) + [len(allowed_chars)])[:140]
 
 dataset = [
     transform_text(t['text']) for i in (2015, 2016, 2017)
@@ -109,7 +109,7 @@ def freerun():
 
         hidden_state = None
         done = False
-        previous_char = 'd'
+        previous_char = 'w'
         while not done:
             feed_dict = {great_nn.input: [[allowed_chars.index(previous_char)]], 
                     great_nn.lengths:[1]}
@@ -119,7 +119,7 @@ def freerun():
                     feed_dict=feed_dict)
             previous_char = allowed_chars[np.argmax(out[0][0])]
             print(previous_char, end=''); sys.stdout.flush()
-            done = previous_char == len(allowed_chars)
+            done = ord(previous_char) == len(allowed_chars)
         
 
 
